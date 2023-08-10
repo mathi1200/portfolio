@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo de Batalha ao Estilo Pokemon</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .battle {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .player {
+      margin-bottom: 20px;
+    }
+
+    .attacks {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    button {
+      background-color: #4287f5;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #366bb5;
+    }
+
+    .pokemon {
+      width: 100px;
+      height: 100px;
+      background-color: #e0e0e0;
+      border-radius: 50%;
+      margin: 10px auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .health-bar {
+      height: 10px;
+      background-color: #00cc00;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      transition: width 0.3s;
+    }
+
+    .attack-animation {
+      animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+      0%, 100% {
+        transform: translateX(0);
+      }
+      10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+      }
+      20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+      }
+    }
+
+    .message {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="battle">
+    <div class="player player1">
+      <h2>Seu Pokemon</h2>
+      <div class="pokemon" id="player1Pokemon">
+        <div class="health-bar" style="width: 100%;"></div>
+      </div>
+      <p>HP: <span id="player1HP">100</span></p>
+      <ul class="attacks">
+        <li><button id="attack1">Tackle</button></li>
+        <li><button id="attack2">Thunderbolt</button></li>
+      </ul>
+    </div>
+    <div class="player player2">
+      <h2>Adversário</h2>
+      <div class="pokemon" id="player2Pokemon">
+        <div class="health-bar" style="width: 100%;"></div>
+      </div>
+      <p>HP: <span id="player2HP">80</span></p>
+    </div>
+    <div class="message" id="message">Escolha um ataque.</div>
+  </div>
+  <script>
+    const player1HPElement = document.getElementById("player1HP");
+    const player2HPElement = document.getElementById("player2HP");
+    const attack1Button = document.getElementById("attack1");
+    const attack2Button = document.getElementById("attack2");
+    const player1PokemonElement = document.getElementById("player1Pokemon");
+    const player2PokemonElement = document.getElementById("player2Pokemon");
+    const messageElement = document.getElementById("message");
+
+    let player1HP = 100;
+    let player2HP = 80;
+    let isPlayer1Turn = true;
+
+    attack1Button.addEventListener("click", () => {
+      if (isPlayer1Turn) {
+        performAttack("Tackle", 10, 15);
+        isPlayer1Turn = false;
+        setTimeout(enemyTurn, 1000);
+      }
+    });
+
+    attack2Button.addEventListener("click", () => {
+      if (isPlayer1Turn) {
+        performAttack("Thunderbolt", 15, 20);
+        isPlayer1Turn = false;
+        setTimeout(enemyTurn, 1000);
+      }
+    });
+
+    function performAttack(attackName, minDamage, maxDamage) {
+      const damage = calculateDamage(minDamage, maxDamage);
+      player2HP -= damage;
+      player2HPElement.textContent = player2HP;
+
+      showMessage(`Seu Pokemon usou ${attackName} e causou ${damage} de dano ao Adversário`);
+
+      animateAttack(player1PokemonElement);
+      updatePokemonHealth(player2HP, player2PokemonElement);
+
+      checkGameOver();
+    }
+
+    function enemyTurn() {
+      if (!isPlayer1Turn && player2HP > 0) {
+        const damage = calculateDamage(8, 12);
+        player1HP -= damage;
+        player1HPElement.textContent = player1HP;
+
+        showMessage(`O Adversário usou Quick Attack e causou ${damage} de dano ao seu Pokemon`);
+
+        animateAttack(player2PokemonElement);
+        updatePokemonHealth(player1HP, player1PokemonElement);
+
+        checkGameOver();
+        isPlayer1Turn = true;
+      }
+    }
+
+    function animateAttack(pokemonElement) {
+      pokemonElement.classList.add("attack-animation");
+      setTimeout(() => {
+        pokemonElement.classList.remove("attack-animation");
+      }, 500);
+    }
+
+    function updatePokemonHealth(health, pokemonElement) {
+      const healthBar = pokemonElement.querySelector(".health-bar");
+      healthBar.style.width = `${health}%`;
+    }
+
+    function calculateDamage(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function showMessage(message) {
+      messageElement.textContent = message;
+    }
+
+    function checkGameOver() {
+      if (player2HP <= 0) {
+        showMessage("Você venceu!");
+        disableButtons();
+      } else if (player1HP <= 0) {
+        showMessage("Você perdeu!");
+        disableButtons();
+      }
+    }
+
+    function disableButtons() {
+      attack1Button.disabled = true;
+      attack2Button.disabled = true;
+    }
+
+    showMessage("Escolha um ataque.");
+  </script>
+</body>
+</html>
